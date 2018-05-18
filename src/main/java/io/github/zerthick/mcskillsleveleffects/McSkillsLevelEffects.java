@@ -19,6 +19,7 @@
 
 package io.github.zerthick.mcskillsleveleffects;
 
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import io.github.zerthick.mcskills.api.account.McSkillsAccount;
 import io.github.zerthick.mcskills.api.event.experience.McSkillsChangeExperienceEvent;
@@ -38,14 +39,18 @@ import org.spongepowered.api.boss.BossBarOverlays;
 import org.spongepowered.api.boss.ServerBossBar;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
+import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.effect.sound.SoundTypes;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.entity.projectile.Firework;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.Order;
 import org.spongepowered.api.event.filter.Getter;
 import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.event.network.ClientConnectionEvent;
+import org.spongepowered.api.item.FireworkEffect;
+import org.spongepowered.api.item.FireworkShapes;
 import org.spongepowered.api.plugin.Dependency;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.plugin.PluginContainer;
@@ -256,6 +261,19 @@ public class McSkillsLevelEffects {
 
                 if (levelUpSoundEnabled) {
                     player.playSound(SoundTypes.ENTITY_PLAYER_LEVELUP, player.getLocation().getPosition(), 1);
+                }
+
+                if (fireworkInterval != 0 && event.getLevel() % fireworkInterval == 0) {
+
+                    player.launchProjectile(Firework.class).ifPresent(firework -> {
+                        FireworkEffect effect = FireworkEffect.builder()
+                                .color(skill.getSkillName().getColor().getColor())
+                                .shape(FireworkShapes.BALL)
+                                .trail(true)
+                                .build();
+
+                        firework.offer(Keys.FIREWORK_EFFECTS, ImmutableList.of(effect));
+                    });
                 }
             }
         }
